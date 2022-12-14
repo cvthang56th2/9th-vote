@@ -43,6 +43,8 @@ onMounted(() => {
     if (existed.value) {
       name.value = existed.value.name
       voted.value = existed.value.voted || []
+    } else {
+      name.value = null
     }
     isMounted.value = true
   })
@@ -58,6 +60,8 @@ onMounted(() => {
     <template v-if="name">
       <div class="text-xl text-center mb-4">
         Hello <span class="font-bold">{{ name }}</span>, <br> you have <span class="font-bold">{{ 3 - voted.length }}</span> ticket remaining.
+        <br>
+        <button class="underline cursor-pointer" @click="logout">Logout</button>
       </div>
       <div v-if="viewFile" class="fixed top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center bg-[rgba(0,0,0,.5)]" @click="viewFile = ''">
         <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]" @click.stop>
