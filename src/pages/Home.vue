@@ -1,9 +1,13 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
+import DeviceServices from '../firebase/device/device'
+import { DeviceUUID } from 'device-uuid'
 
+const uuid = new DeviceUUID().get();
 const inputName = ref('')
 const name = ref('')
+const isMounted = ref(false)
 const members = ref([])
 const voted = ref([])
 const viewFile = ref('')
@@ -18,28 +22,31 @@ const vote = (member) => {
         Swal.fire('Voted!', '', 'success')
         MemberServices.update(member.id, { voted: [...(member.voted || []), name.value] })
         voted.value.push(member.id)
-        localStorage.setItem('voted', JSON.stringify(voted.value))
+        DeviceServices.update(uuid, { voted: voted.value })
       }
     })
   }
 }
 const login = () => {
   name.value = inputName.value
-  localStorage.setItem('9thName', name.value)
+  DeviceServices.create(uuid, { name: name.value })
 }
 onMounted(() => {
-  name.value = localStorage.getItem('9thName')
-  const lsVoted = localStorage.getItem('voted')
-  if (lsVoted) {
-    voted.value = JSON.parse(lsVoted)  
-  }
+  DeviceServices.snapshotDevices(data => {
+    const existed = data.find(e => e.id === uuid)
+    if (existed) {
+      name.value = existed.name
+      voted.value = existed.voted || []
+    }
+    isMounted.value = true
+  })
   MemberServices.snapshotMembers(data => {
     members.value = data
   })
 })
 </script>
 <template>
-  <div class="pt-5">
+  <div v-if="isMounted" class="pt-5">
     <img src="/src/assets/logo-400x400.png" alt="logo" width="100" class="mx-auto">
     <h1 class="text-3xl text-center font-bold mb-2">9thWonder YEP Vote</h1>
     <template v-if="name">
