@@ -5,6 +5,8 @@ import './style.css'
 import App from './App.vue'
 import Home from './pages/Home.vue'
 import Manage from './pages/Manage.vue'
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -21,6 +23,7 @@ const router = createRouter({
 })
 
 app.use(router)
-
+app.use(VueSweetalert2);
+window.Swal = app.config.globalProperties.$swal;
 app.mount('#app')
 

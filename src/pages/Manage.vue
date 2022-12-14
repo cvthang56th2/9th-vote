@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import MemberServices from '../firebase/member/member'
 
 const isLoged = ref(false)
+const previewSrc = ref(null)
 const formLogin = ref({})
 const members = ref([])
 const login = () => {
@@ -15,33 +17,85 @@ const login = () => {
 }
 const formMember = ref({})
 const addMember = () => {
-  const { name, avatar } = formMember.value
+  const avatarEl = document.querySelector('#avatar')
+  const avatar = avatarEl.files[0]
+  const { name } = formMember.value
   if (name && avatar) {
+    MemberServices.create({ name, avatar })
     members.value.push({ name, avatar })
     formMember.value = {}
+    avatarEl.value = ''
+    avatarEl.type = 'text'
+    avatarEl.type = 'file'
+    previewSrc.value = null
+    Swal.fire('Added!', '', 'success')
   }
+}
+const onChangeFileImage = event => {
+  let reader = new FileReader();
+  let file = event.target.files[0];
+
+  reader.onload = event => {
+    previewSrc.value = event.target.result
+  };
+
+  reader.readAsDataURL(file);
+}
+const remove = (memberId) => {
+  Swal.fire({
+    title: 'Are you sure want to remove this item? This action cannot be undo.',
+    showCancelButton: true,
+    confirmButtonText: 'Remove',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire('Removed!', '', 'success')
+      MemberServices.remove(memberId)
+    }
+  })
+}
+const sortMembers = () => {
+  members.value = members.value.sort((a, b) => {
+    return ((a.voted && a.voted.length) || 0) < ((b.voted && b.voted.length) || 0) ? 1 : -1
+  })
 }
 onMounted(() => {
   isLoged.value = localStorage.getItem('isLoged') === 'true'
+
+  MemberServices.snapshotMembers(data => {
+    members.value = data
+  })
 })
 </script>
 <template>
   <div class="p-5">
     <h1 class="text-3xl text-center font-bold mb-5">9thWonder Vote</h1>
     <template v-if="isLoged">
-      <div class="p-2 xl:p-4">
-        <input v-model="formMember.name" type="text" placeholder="Name" class="border-2 p-1 mb-2">
-        <input ref="avatar" id="avatar" type="file" class="mb-2">
-        <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="addMember">Add</button>
+      <div class="mb-4 p-2 border-2">
+        <div>
+          <input v-model="formMember.name" type="text" placeholder="Name" class="border-2 p-1 mb-3">
+        </div>
+        <div>
+          <input ref="avatar" id="avatar" accept="image/*" type="file" class="mb-3" @change="onChangeFileImage">
+        </div>
+        <div v-if="previewSrc" class="mb-3 border-2 flex justify-center">
+          <img :src="previewSrc" alt="preview">
+        </div>
+        <div>
+          <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="addMember">Add</button>
+        </div>
       </div>
-      <div v-for="member in members" class="p-2 xl:p-4">
+      <div class="mb-5">
+        <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="sortMembers">Sort by vote</button>
+      </div>
+      <div v-for="(member, mIndex) in members" :key="`member-${member.id}`" class="mb-4">
         <div class="text-center shadow-lg flex">
-          <div class="w-1/2 h-[200px] xl:h-[400px] relative">
-            <img src="https://via.placeholder.com/1000" alt="" class="absolute inset-0 object-cover w-full h-full">
+          <div class="w-1/2 h-[200px] xl:h-[400px] relative shadow-md">
+            <img :src="member.avatar" alt="" class="absolute inset-0 object-cover w-full h-full">
           </div>
           <div class="w-1/2 p-2">
-            <h4 class="text-lg my-1 font-semibold">Name</h4>
-            <button class="ml-2 bg-yellow-300 px-5 py-1 rounded-sm font-semibold">Remove</button>
+            <h4 class="text-lg my-1 font-semibold">{{ member.name }}</h4>
+            <h5 class="text-md my-1 font-semibold">Voted: {{ (member.voted && member.voted.length) || 0 }}</h5>
+            <button class="ml-2 bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="remove(member.id)">Remove</button>
           </div>
         </div>
       </div>
