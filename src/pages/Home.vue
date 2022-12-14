@@ -47,13 +47,13 @@ onMounted(() => {
         Hello <span class="font-bold">{{ name }}</span>, <br> you have <span class="font-bold">{{ 3 - voted.length }}</span> ticket remaining.
       </div>
       <div v-if="viewFile" class="fixed top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center bg-[rgba(0,0,0,.5)]">
-        <img :src="viewFile" alt="">
-        <span class="absolute top-2 right-2 bg-white px-[10px] py-[5px] rounded-full font-bold" @click="viewFile = ''">&#10005</span>
+        <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]">
+        <span class="cursor-pointer absolute top-2 right-2 bg-white px-[10px] py-[5px] rounded-full font-bold" @click="viewFile = ''">&#10005</span>
       </div>
       <div class="flex flex-wrap">
         <div v-for="member in members" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
           <div class="text-center shadow-lg">
-            <div class="w-full h-[200px] xl:h-[400px] relative border-b-2" @click="viewFile = member.avatar">
+            <div class="w-full h-[200px] xl:h-[400px] relative border-b-2 cursor-pointer" @click="viewFile = member.avatar">
               <span v-if="voted.includes(member.id)" class="absolute p-2 top-0 left-0 bg-green-500 text-white font-bold z-[2]">Voted ({{ voted.filter(id => id === member.id).length }})</span>
               <img :src="member.avatar" :alt="member.name" class="absolute inset-0 object-cover w-full h-full">
             </div>
