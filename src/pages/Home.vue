@@ -2,8 +2,6 @@
 import { onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
 import DeviceServices from '../firebase/device/device'
-
-const uuid = window.uuid;
 const inputName = ref('')
 const name = ref('')
 const isMounted = ref(false)
@@ -21,21 +19,30 @@ const vote = (member) => {
         Swal.fire('Voted!', '', 'success')
         MemberServices.update(member.id, { voted: [...(member.voted || []), name.value] })
         voted.value.push(member.id)
-        DeviceServices.update(uuid, { voted: voted.value })
+        DeviceServices.update(name.value, { voted: voted.value })
       }
     })
   }
 }
+const existed = ref(null)
+const users = ref([])
 const login = () => {
-  name.value = inputName.value
-  DeviceServices.create(uuid, { name: name.value })
+  existed.value = users.value.find(e => e.id === inputName.value)
+  if (existed.value) {
+    name.value = inputName.value
+    localStorage.setItem('9thName', name.value)
+  } else {
+    Swal.fire('Not valid user!')
+  }
 }
 onMounted(() => {
+  name.value = localStorage.getItem('9thName')
   DeviceServices.snapshotDevices(data => {
-    const existed = data.find(e => e.id === uuid)
-    if (existed) {
-      name.value = existed.name
-      voted.value = existed.voted || []
+    users.value = data
+    existed.value = data.find(e => e.id === name.value)
+    if (existed.value) {
+      name.value = existed.value.name
+      voted.value = existed.value.voted || []
     }
     isMounted.value = true
   })
@@ -83,7 +90,7 @@ onMounted(() => {
         class="p-10 rounded-md border-4 border-gray-700"
         @submit.stop="login"
       >
-        <h1 class="mb-5 text-xl">Enter your name...</h1>
+        <h1 class="mb-5 text-xl">Enter your teams'name...(ex: thang.cao, trang.tm.nguyen, tien.m.nguyen...)</h1>
         <div>
           <label for="userName"></label>
           <input
