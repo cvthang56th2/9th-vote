@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
 
 const isLoged = ref(false)
@@ -53,11 +53,16 @@ const remove = (memberId) => {
     }
   })
 }
-const sortMembers = () => {
-  members.value = members.value.sort((a, b) => {
-    return ((a.voted && a.voted.length) || 0) < ((b.voted && b.voted.length) || 0) ? 1 : -1
-  })
-}
+const isSortByVote = ref(false)
+const computedMembers = computed(() => {
+  let results = JSON.parse(JSON.stringify(members.value))
+  if (isSortByVote.value) {
+    results = results.sort((a, b) => {
+      return ((a.voted && a.voted.length) || 0) < ((b.voted && b.voted.length) || 0) ? 1 : -1
+    })
+  }
+  return results
+})
 onMounted(() => {
   isLoged.value = localStorage.getItem('isLoged') === 'true'
 
@@ -84,10 +89,11 @@ onMounted(() => {
           <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="addMember">Add</button>
         </div>
       </div>
-      <div class="mb-5">
-        <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="sortMembers">Sort by vote</button>
+      <div class="mb-5 flex items-center">
+        <input v-model="isSortByVote" type="checkbox" class="w-[20px] h-[20px] mr-2" id="sort-by-vote">
+        <label for="sort-by-vote" class="cursor-pointer font-semibold">Sort by vote</label>
       </div>
-      <div v-for="(member, mIndex) in members" :key="`member-${member.id}`" class="mb-4">
+      <div v-for="(member, mIndex) in computedMembers" :key="`member-${mIndex}`" class="mb-4">
         <div class="text-center shadow-lg flex">
           <div class="w-1/2 h-[200px] xl:h-[400px] relative shadow-md">
             <img :src="member.avatar" alt="" class="absolute inset-0 object-cover w-full h-full">

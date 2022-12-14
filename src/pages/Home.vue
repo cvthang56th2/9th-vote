@@ -1,13 +1,51 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
 import DeviceServices from '../firebase/device/device'
+
+function filterSeal (str) {
+  str = typeof str === 'string' ? str : ''
+  str = str.toLowerCase()
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i')
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o')
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u')
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y')
+  str = str.replace(/đ/g, 'd')
+  str = str.replace(/[^a-zA-Z0-9 ]/g, ' ')
+  str = (str).trim()
+
+  // str= str.replace(/!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\|\'| |\"|\&|\#|\[|\]|~|$|_/g,"-")
+  /* tìm và thay thế các kí tự đặc biệt trong chuỗi sang kí tự - */
+  // str= str.replace(/-+-/g,"-") //thay thế 2- thành 1-
+  // str = str.replace(/^\-+|\-+$/g, '')
+  // cắt bỏ ký tự - ở đầu và cuối chuỗi
+  return str
+}
 const inputName = ref('')
 const name = ref('')
 const isMounted = ref(false)
+const isSortByVote = ref(false)
 const members = ref([])
 const voted = ref([])
 const viewFile = ref('')
+const existed = ref(null)
+const users = ref([])
+const keyword = ref('')
+const computedMembers = computed(() => {
+  let results = JSON.parse(JSON.stringify(members.value))
+  if (keyword.value) {
+    const reg = new RegExp(keyword.value, 'gi')
+    results = results.filter(e => e.name && filterSeal(e.name).match(reg))
+  }
+  if (isSortByVote.value) {
+    results = results.sort((a, b) => {
+      return ((a.voted && a.voted.length) || 0) < ((b.voted && b.voted.length) || 0) ? 1 : -1
+    })
+  }
+  return results
+})
 const vote = (member) => {
   if (voted.value.length < 3) {
     Swal.fire({
@@ -24,8 +62,6 @@ const vote = (member) => {
     })
   }
 }
-const existed = ref(null)
-const users = ref([])
 const login = () => {
   existed.value = users.value.find(e => e.id === inputName.value)
   if (existed.value) {
@@ -84,10 +120,24 @@ onMounted(() => {
         <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]" @click.stop>
         <span class="cursor-pointer absolute top-2 right-2 bg-white px-[10px] py-[5px] rounded-full font-bold" @click="viewFile = ''">&#10005</span>
       </div>
+      
+      <div class="mb-4 px-2 flex">
+        <input
+          id="keyword"
+          v-model="keyword"
+          type="text"
+          class="border-2 w-1/2 p-2 rounded-sm"
+          placeholder="Search by name..."
+        />
+        <div class="w-1/2 pl-5 flex items-center">
+          <input v-model="isSortByVote" type="checkbox" class="w-[20px] h-[20px] mr-2" id="sort-by-vote">
+          <label for="sort-by-vote" class="cursor-pointer font-semibold">Sort by vote</label>
+        </div>
+      </div>
       <div class="flex flex-wrap">
-        <div v-for="member in members" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
+        <div v-for="(member, mIndex) in computedMembers" :key="`member-${mIndex}`" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
           <div class="text-center shadow-lg border-2">
-            <div class="w-full h-[200px] xl:h-[400px] relative border-b-2 cursor-pointer" @click="viewFile = member.avatar">
+            <div class="w-full h-[200px] md:h-[300px] xl:h-[400px] relative border-b-2 cursor-pointer" @click="viewFile = member.avatar">
               <span v-if="voted.includes(member.id)" class="absolute p-2 top-0 left-0 bg-green-500 text-white font-bold z-[2]">Voted ({{ voted.filter(id => id === member.id).length }})</span>
               <img :src="member.avatar" :alt="member.name" class="absolute inset-0 object-cover w-full h-full">
             </div>
