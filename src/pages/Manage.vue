@@ -16,19 +16,23 @@ const login = () => {
   }
 }
 const formMember = ref({})
-const addMember = () => {
+const addMember = async () => {
   const avatarEl = document.querySelector('#avatar')
   const avatar = avatarEl.files[0]
   const { name } = formMember.value
   if (name && avatar) {
-    MemberServices.create({ name, avatar })
-    members.value.push({ name, avatar })
-    formMember.value = {}
-    avatarEl.value = ''
-    avatarEl.type = 'text'
-    avatarEl.type = 'file'
-    previewSrc.value = null
-    Swal.fire('Added!', '', 'success')
+    try {
+      await MemberServices.create({ name, avatar })
+      members.value.push({ name, avatar })
+      formMember.value = {}
+      avatarEl.value = ''
+      avatarEl.type = 'text'
+      avatarEl.type = 'file'
+      previewSrc.value = null
+      Swal.fire('Added!', '', 'success')
+    } catch (error) {
+      Swal.fire('Error!', '', 'error')
+    }
   }
 }
 const onChangeFileImage = event => {
