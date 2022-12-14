@@ -86,7 +86,7 @@ onMounted(() => {
       </div>
       <div class="flex flex-wrap">
         <div v-for="member in members" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
-          <div class="text-center shadow-lg">
+          <div class="text-center shadow-lg border-2">
             <div class="w-full h-[200px] xl:h-[400px] relative border-b-2 cursor-pointer" @click="viewFile = member.avatar">
               <span v-if="voted.includes(member.id)" class="absolute p-2 top-0 left-0 bg-green-500 text-white font-bold z-[2]">Voted ({{ voted.filter(id => id === member.id).length }})</span>
               <img :src="member.avatar" :alt="member.name" class="absolute inset-0 object-cover w-full h-full">
