@@ -126,13 +126,13 @@ onMounted(() => {
           id="keyword"
           v-model="keyword"
           type="text"
-          class="border-2 w-1/2 p-2 rounded-sm"
+          class="border-2 w-full p-2 rounded-sm"
           placeholder="Search by name..."
         />
-        <div class="w-1/2 pl-5 flex items-center">
+        <!-- <div class="w-1/2 pl-5 flex items-center">
           <input v-model="isSortByVote" type="checkbox" class="w-[20px] h-[20px] mr-2" id="sort-by-vote">
           <label for="sort-by-vote" class="cursor-pointer font-semibold">Sort by vote</label>
-        </div>
+        </div> -->
       </div>
       <div class="flex flex-wrap">
         <div v-for="(member, mIndex) in computedMembers" :key="`member-${mIndex}`" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
@@ -143,7 +143,8 @@ onMounted(() => {
             </div>
             <div class="p-2">
               <h4 class="text-lg my-1 font-semibold">{{ member.name }}</h4>
-              <h5 class="text-md my-1 font-semibold">Voted: {{ member.voted && member.voted.length || 0 }}</h5>
+              <!-- <h5 class="text-md my-1 font-semibold">Voted: {{ member.voted && member.voted.length || 0 }}</h5> -->
+              <h5 class="text-md my-1 font-semibold">Voted: ---</h5>
               <button
                 class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold"
                 :disabled="voted.length === 3" @click="vote(member)"
