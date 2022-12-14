@@ -3,19 +3,7 @@ import { onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
 import DeviceServices from '../firebase/device/device'
 
-const generateDeviceUUID = () => {
-  var navigator_info = window.navigator;
-  var screen_info = window.screen;
-  var uid = navigator_info.mimeTypes.length;
-  uid += navigator_info.userAgent.replace(/\D+/g, '');
-  uid += navigator_info.plugins.length;
-  uid += screen_info.height || '';
-  uid += screen_info.width || '';
-  uid += screen_info.pixelDepth || '';
-  return uid
-}
-
-const uuid = generateDeviceUUID()
+const uuid = window.uuid;
 const inputName = ref('')
 const name = ref('')
 const isMounted = ref(false)
