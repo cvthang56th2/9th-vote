@@ -22,7 +22,6 @@ const addMember = () => {
   const { name } = formMember.value
   if (name && avatar) {
     MemberServices.create({ name, avatar })
-    members.value.push({ name, avatar })
     formMember.value = {}
     avatarEl.value = ''
     avatarEl.type = 'text'
