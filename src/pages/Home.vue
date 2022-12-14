@@ -46,8 +46,8 @@ onMounted(() => {
       <div class="text-xl text-center mb-4">
         Hello <span class="font-bold">{{ name }}</span>, <br> you have <span class="font-bold">{{ 3 - voted.length }}</span> ticket remaining.
       </div>
-      <div v-if="viewFile" class="fixed top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center bg-[rgba(0,0,0,.5)]">
-        <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]">
+      <div v-if="viewFile" class="fixed top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center bg-[rgba(0,0,0,.5)]" @click="viewFile = ''">
+        <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]" @click.stop>
         <span class="cursor-pointer absolute top-2 right-2 bg-white px-[10px] py-[5px] rounded-full font-bold" @click="viewFile = ''">&#10005</span>
       </div>
       <div class="flex flex-wrap">
