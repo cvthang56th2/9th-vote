@@ -92,7 +92,7 @@ onMounted(() => {
         class="p-10 rounded-md border-4 border-gray-700"
         @submit.stop="login"
       >
-        <h1 class="mb-5 text-xl">Enter your teams'name...(ex: thang.cao, trang.tm.nguyen, tien.m.nguyen...)</h1>
+        <h1 class="mb-5 text-xl">Enter your teams'name...(ex: thang.cao, trang.t.nguyen, tien.m.nguyen...)</h1>
         <div>
           <label for="userName"></label>
           <input
