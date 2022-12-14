@@ -52,7 +52,7 @@ class deviceServices {
   }
 
   snapshotDevices (callback) {
-    const q = query(collection(db, DEVICES), orderBy("createdAt", 'desc'))
+    const q = query(collection(db, DEVICES))
     if (typeof this.unsubscribeDevices === 'function') {
       this.unsubscribeDevices()
     }

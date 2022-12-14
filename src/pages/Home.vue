@@ -31,21 +31,38 @@ const login = () => {
   if (existed.value) {
     name.value = inputName.value
     localStorage.setItem('9thName', name.value)
+    updateUserVoted()
+    inputName.value = ''
   } else {
     Swal.fire('Not valid user!')
+  }
+}
+const logout = () => {
+  Swal.fire({
+    title: 'Are you sure want to logout?',
+    showCancelButton: true,
+    confirmButtonText: 'OK',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      name.value = null
+      localStorage.setItem('9thName', '')
+    }
+  })
+}
+const updateUserVoted = () => {
+  existed.value = users.value.find(e => e.id === name.value)
+  if (existed.value) {
+    name.value = existed.value.name
+    voted.value = existed.value.voted || []
+  } else {
+    name.value = null
   }
 }
 onMounted(() => {
   name.value = localStorage.getItem('9thName')
   DeviceServices.snapshotDevices(data => {
     users.value = data
-    existed.value = data.find(e => e.id === name.value)
-    if (existed.value) {
-      name.value = existed.value.name
-      voted.value = existed.value.voted || []
-    } else {
-      name.value = null
-    }
+    updateUserVoted()
     isMounted.value = true
   })
   MemberServices.snapshotMembers(data => {
@@ -59,7 +76,9 @@ onMounted(() => {
     <h1 class="text-3xl text-center font-bold mb-2">9thWonder YEP Vote</h1>
     <template v-if="name">
       <div class="text-xl text-center mb-4">
-        Hello <span class="font-bold">{{ name }}</span>, <br> you have <span class="font-bold">{{ 3 - voted.length }}</span> ticket remaining.
+        Hello <span class="font-bold">{{ name }}</span>, <br> you have <span class="font-bold">{{ 3 - voted.length }}</span> ticket{{ 3 - voted.length < 2 ? '' : 's' }} remaining.
+        <br>
+        <button class="underline hover:text-blue-500" @click="logout">Logout</button>
       </div>
       <div v-if="viewFile" class="fixed top-0 left-0 w-screen h-screen z-[999] flex justify-center items-center bg-[rgba(0,0,0,.5)]" @click="viewFile = ''">
         <img :src="viewFile" alt="" class="max-w-[80vw] max-h-[80vh]" @click.stop>
