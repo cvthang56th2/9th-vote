@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
+import SettingsServices from '../firebase/settings/settings'
 
 const isLoged = ref(false)
+const isLoading = ref(false)
 const previewSrc = ref(null)
 const formLogin = ref({})
 const members = ref([])
@@ -22,8 +24,8 @@ const addMember = async () => {
   const { name } = formMember.value
   if (name && avatar) {
     try {
+      isLoading.value = true
       await MemberServices.create({ name, avatar })
-      members.value.push({ name, avatar })
       formMember.value = {}
       avatarEl.value = ''
       avatarEl.type = 'text'
@@ -33,6 +35,7 @@ const addMember = async () => {
     } catch (error) {
       Swal.fire('Error!', '', 'error')
     }
+    isLoading.value = false
   }
 }
 const onChangeFileImage = event => {
@@ -58,6 +61,7 @@ const remove = (memberId) => {
   })
 }
 const isSortByVote = ref(false)
+const isShowResult = ref(false)
 const computedMembers = computed(() => {
   let results = JSON.parse(JSON.stringify(members.value))
   if (isSortByVote.value) {
@@ -67,8 +71,15 @@ const computedMembers = computed(() => {
   }
   return results
 })
-onMounted(() => {
+const onChangeShowResults = () => {
+  SettingsServices.update('app', {
+    isShowResult: isShowResult.value
+  })
+}
+onMounted(async () => {
   isLoged.value = localStorage.getItem('isLoged') === 'true'
+  const appSettings = await SettingsServices.get('app')
+  isShowResult.value = appSettings.isShowResult
 
   MemberServices.snapshotMembers(data => {
     members.value = data
@@ -90,12 +101,17 @@ onMounted(() => {
           <img :src="previewSrc" alt="preview">
         </div>
         <div>
-          <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="addMember">Add</button>
+          <button class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold" @click="addMember" :disabled="isLoading" :class="isLoading ? 'opacity-50' : ''">Add</button>
         </div>
       </div>
       <div class="mb-5 flex items-center">
         <input v-model="isSortByVote" type="checkbox" class="w-[20px] h-[20px] mr-2" id="sort-by-vote">
         <label for="sort-by-vote" class="cursor-pointer font-semibold">Sort by vote</label>
+      </div>
+      <div class="mb-5 flex items-center">
+        <h4 class="font-semibold mr-4">Settings</h4>
+        <input v-model="isShowResult" @change="onChangeShowResults" type="checkbox" class="w-[20px] h-[20px] mr-2" id="is-show-result">
+        <label for="is-show-result" class="cursor-pointer font-semibold">Show Results</label>
       </div>
       <div v-for="(member, mIndex) in computedMembers" :key="`member-${mIndex}`" class="mb-4">
         <div class="text-center shadow-lg flex">

@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import MemberServices from '../firebase/member/member'
 import DeviceServices from '../firebase/device/device'
+import SettingsServices from '../firebase/settings/settings'
 
 function filterSeal (str) {
   str = typeof str === 'string' ? str : ''
@@ -23,6 +24,8 @@ function filterSeal (str) {
   // cắt bỏ ký tự - ở đầu và cuối chuỗi
   return str
 }
+const isShowResult = ref(false)
+
 const inputName = ref('')
 const name = ref('')
 const isMounted = ref(false)
@@ -63,9 +66,10 @@ const vote = (member) => {
   }
 }
 const login = () => {
-  existed.value = users.value.find(e => e.id === inputName.value)
+  const nameLc = String(inputName.value || '').toLocaleLowerCase()
+  existed.value = users.value.find(e => e.id === nameLc)
   if (existed.value) {
-    name.value = inputName.value
+    name.value = nameLc
     localStorage.setItem('9thName', name.value)
     updateUserVoted()
     inputName.value = ''
@@ -86,7 +90,7 @@ const logout = () => {
   })
 }
 const updateUserVoted = () => {
-  existed.value = users.value.find(e => e.id === name.value)
+  existed.value = users.value.find(e => e.id === String(name.value || '').toLocaleLowerCase())
   if (existed.value) {
     name.value = existed.value.name
     voted.value = existed.value.voted || []
@@ -94,8 +98,11 @@ const updateUserVoted = () => {
     name.value = null
   }
 }
-onMounted(() => {
+onMounted(async () => {
   name.value = localStorage.getItem('9thName')
+  const appSettings = await SettingsServices.get('app')
+  isShowResult.value = appSettings.isShowResult
+
   DeviceServices.snapshotDevices(data => {
     users.value = data
     updateUserVoted()
@@ -129,10 +136,10 @@ onMounted(() => {
           class="border-2 w-full p-2 rounded-sm"
           placeholder="Search by name..."
         />
-        <!-- <div class="w-1/2 pl-5 flex items-center">
+        <div v-if="isShowResult" class="w-1/2 pl-5 flex items-center">
           <input v-model="isSortByVote" type="checkbox" class="w-[20px] h-[20px] mr-2" id="sort-by-vote">
           <label for="sort-by-vote" class="cursor-pointer font-semibold">Sort by vote</label>
-        </div> -->
+        </div>
       </div>
       <div class="flex flex-wrap">
         <div v-for="(member, mIndex) in computedMembers" :key="`member-${mIndex}`" class="w-1/2 xl:w-1/3 p-2 xl:p-4">
@@ -143,8 +150,8 @@ onMounted(() => {
             </div>
             <div class="p-2">
               <h4 class="text-lg my-1 font-semibold">{{ member.name }}</h4>
-              <!-- <h5 class="text-md my-1 font-semibold">Voted: {{ member.voted && member.voted.length || 0 }}</h5> -->
-              <h5 class="text-md my-1 font-semibold">Voted: ---</h5>
+              <h5 v-if="isShowResult" class="text-md my-1 font-semibold">Voted: {{ member.voted && member.voted.length || 0 }}</h5>
+              <h5 v-else class="text-md my-1 font-semibold">Voted: ---</h5>
               <button
                 class="bg-yellow-300 px-5 py-1 rounded-sm font-semibold"
                 :disabled="voted.length === 3" @click="vote(member)"

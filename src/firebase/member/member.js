@@ -62,12 +62,12 @@ class memberServices {
             () => {
               // Upload completed successfully, now we can get the download URL
               getDownloadURL(uploadTask.snapshot.ref).then((avatarUrl) => {
-                return setDoc(doc(db, MEMBERS, id), {
+                return resolve(setDoc(doc(db, MEMBERS, id), {
                   updatedAt: Timestamp.fromDate(today),
                   createdAt: Timestamp.fromDate(today),
                   avatar: avatarUrl,
                   name
-                })
+                }))
               });
             }
           );
